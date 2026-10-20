@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bootcamp Leaderboard</title>
+  <meta name="description" content="Live team standings for the EDURS Robotics & IoT Bootcamp, on the road to the BUMFA TRIALS.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/anatomy.css">
+  <link rel="stylesheet" href="assets/bots.css">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="frame">
+    <aside class="rail" aria-hidden="true">
+      <div class="rail-inner">
+      <div class="rail-mark">EDURS</div>
+      <div class="rail-title">Leaderboard</div>
+      <svg class="rail-arrow" viewBox="0 0 64 64"><path d="M6 58 L44 20 M20 18 H46 V44" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="square"/></svg>
+      </div>
+    </aside>
+
+    <main class="sheet">
+      <header class="bar">
+        <span>Robotics &amp; IoT Bootcamp</span>
+        <span class="bar-mid">EDURS / Road to the BUMFA Trials</span>
+        <span class="bar-right"><span class="status" data-status>Loading</span></span>
+      </header>
+
+      <section class="split">
+        <div class="col col-left">
+          <div class="intro">
+            <h1>Every class<br>counts.</h1>
+            <p class="mono-copy">Teams earn points from the second class onwards. The board reads straight from the scoring sheet, so a change there shows up here on the next refresh.</p>
+          </div>
+
+          <div class="cells">
+            <div class="cell">
+              <div class="eyebrow">Teams</div>
+              <div class="big" data-team-count>--</div>
+              <p class="mono-copy">Three builders each: a leader, a builder and a coder.</p>
+            </div>
+            <div class="cell">
+              <div class="eyebrow">Classes scored</div>
+              <div class="big" data-day-count>--</div>
+              <p class="mono-copy" data-updated>Waiting for the sheet.</p>
+            </div>
+          </div>
+
+          <div class="spec">
+            <table>
+              <thead><tr><th>Category</th><th>How to earn it</th><th>Points</th></tr></thead>
+              <tbody>
+                <tr><td><i class="sw" style="--c:var(--s-att)"></i>Attendance</td><td>At least one member present, from class 2</td><td>+1</td></tr>
+                <tr><td><i class="sw" style="--c:var(--s-hw)"></i>Assignment</td><td>Team homework handed in</td><td>+1</td></tr>
+                <tr><td><i class="sw" style="--c:var(--s-quiz)"></i>In-class quiz</td><td>Quiz completed in class</td><td>+1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col col-right">
+          <div class="rank-head">
+            <h2>Team<br>Rankings</h2>
+            <div class="legend" aria-label="Legend">
+              <span><i class="sw" style="--c:var(--s-att)"></i>Attendance</span>
+              <span><i class="sw" style="--c:var(--s-hw)"></i>Assignment</span>
+              <span><i class="sw" style="--c:var(--s-quiz)"></i>Quiz</span>
+            </div>
+          </div>
+          <div class="view-toggle" role="tablist" aria-label="View">
+            <button role="tab" aria-selected="true" data-view="chart">Chart</button>
+            <button role="tab" aria-selected="false" data-view="table">Table</button>
+          </div>
+          <ol class="chart" data-chart aria-label="Team rankings by total points"></ol>
+          <div class="table-view" data-table hidden></div>
+          <div class="tip" data-tip hidden></div>
+        </div>
+      </section>
+
+      <section class="bots" aria-labelledby="bots-title">
+        <header class="bar bar-inner">
+          <span id="bots-title">The three bots</span>
+          <span class="bar-right">One chassis / three front ends</span>
+        </header>
+        <div class="bot-grid">
+          <figure class="bot">
+            <figcaption><span class="eyebrow">01 / Sumo bot</span><strong>Push them out.</strong></figcaption>
+            <div class="iso bot-ink" data-theme="light" data-bot="sumo"></div>
+            <p class="mono-copy">A low steel wedge on the nose slides under the other robot and lifts it off its wheels.</p>
+          </figure>
+          <figure class="bot">
+            <figcaption><span class="eyebrow">02 / Soccer bot</span><strong>Trap and carry.</strong></figcaption>
+            <div class="iso bot-ink" data-theme="light" data-bot="soccer"></div>
+            <p class="mono-copy">Two arms and a back wall form a cradle that holds the ball while the bot drives.</p>
+          </figure>
+          <figure class="bot">
+            <figcaption><span class="eyebrow">03 / Obstacle course bot</span><strong>See the wall.</strong></figcaption>
+            <div class="iso bot-ink" data-theme="light" data-bot="obstacle"></div>
+            <p class="mono-copy">An ultrasonic sensor on the nose measures the distance to whatever is ahead.</p>
+          </figure>
+        </div>
+      </section>
+
+      <footer class="bar foot">
+        <span>EDURS × BOGA</span>
+        <span class="bar-right">East Delta University</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

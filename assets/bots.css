@@ -1,0 +1,10 @@
+/* Ink overrides for the robot figures: bolder, closer to a printed spec sheet. */
+.bot-ink.iso[data-theme="light"]{
+  --anatomy-paper:#f4f2ec;--anatomy-face:#ffffff;--anatomy-top:#ffffff;
+  --anatomy-shade-0:#c9c6bd;--anatomy-shade-1:#d8d5cc;--anatomy-shade-2:#e5e2da;--anatomy-shade-3:#efece5;
+  --anatomy-lit-top:#fff1e8;--anatomy-lit-shade:#fbd9c4;--anatomy-lit:#e8562a;
+  --anatomy-hi:#141414;--anatomy-mid:#3c3c3c;--anatomy-lo:#7a7a76;--anatomy-faint:#b3b0a8;
+  --anatomy-halo:#6e6a5e;--anatomy-halo-opacity:.28;--anatomy-dot:#141414;
+  --anatomy-weight:.75px;
+}
+.bot-ink svg{width:100%;height:auto;display:block}
