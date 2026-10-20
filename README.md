@@ -58,7 +58,9 @@ refreshes published CSVs within about five minutes of an edit; the board re-read
 
 ## Hosting
 
-GitHub Pages: *Settings > Pages > Deploy from a branch > `main` / root*.
+Vercel: *Add New > Project*, import this repo, set *Framework Preset* to **Other**,
+leave the build command empty and the output directory as the root, then *Deploy*.
+Every push to `main` redeploys. (GitHub Pages also works: *Settings > Pages > `main` / root*.)
 
 ## The robot figures
 
