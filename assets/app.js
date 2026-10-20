@@ -180,7 +180,10 @@
   // Robot figures are prebuilt SVG fragments (tools/build-bots.mjs).
   if (!live) {
     document.querySelectorAll("[data-bot]").forEach(async (slot) => {
-      try { slot.innerHTML = await (await fetch(`assets/bots/${slot.dataset.bot}.svg.html`)).text(); } catch {}
+      try {
+        slot.innerHTML = await (await fetch(`assets/bots/${slot.dataset.bot}.svg.html`)).text();
+        window.BotScenes?.mount(slot.closest("[data-scene-host]"), slot.querySelector("svg"));
+      } catch (error) { console.warn("Bot figure failed to load", error); }
     });
   }
 

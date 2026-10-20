@@ -73,4 +73,7 @@ To change them, edit `tools/build-bots.mjs` and run:
 node tools/build-bots.mjs
 ```
 
-The page loads the output from `assets/bots/`.
+The page loads the output from `assets/bots/`. Each figure is a small scene that plays
+on hover (tap on phones): the sumo bot pushes another bot off the ring, the soccer bot
+scores and celebrates, and the obstacle bot pings a box, stops and turns. The motion
+lives in `assets/scenes.js` and stays off under the system's reduced-motion setting.

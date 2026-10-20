@@ -86,20 +86,29 @@
           <span class="bar-right">One chassis / three front ends</span>
         </header>
         <div class="bot-grid">
-          <figure class="bot">
-            <figcaption><span class="eyebrow">01 / Sumo bot</span><strong>Push them out.</strong></figcaption>
+          <figure class="bot" tabindex="0" data-scene-host>
+            <div class="bot-text">
+              <figcaption><span class="eyebrow">01 / Sumo bot</span><strong>Push them out.</strong></figcaption>
+              <p class="mono-copy">A low steel wedge on the nose slides under the other robot and drives it off the ring.</p>
+              <p class="bot-say" data-say aria-live="polite">Hover to play</p>
+            </div>
             <div class="iso bot-ink" data-theme="light" data-bot="sumo"></div>
-            <p class="mono-copy">A low steel wedge on the nose slides under the other robot and lifts it off its wheels.</p>
           </figure>
-          <figure class="bot">
-            <figcaption><span class="eyebrow">02 / Soccer bot</span><strong>Trap and carry.</strong></figcaption>
+          <figure class="bot" tabindex="0" data-scene-host>
+            <div class="bot-text">
+              <figcaption><span class="eyebrow">02 / Soccer bot</span><strong>Trap and score.</strong></figcaption>
+              <p class="mono-copy">Two arms and a back wall cradle the ball. The bot drives it up, stops short and lets it roll into the net.</p>
+              <p class="bot-say" data-say aria-live="polite">Hover to play</p>
+            </div>
             <div class="iso bot-ink" data-theme="light" data-bot="soccer"></div>
-            <p class="mono-copy">Two arms and a back wall form a cradle that holds the ball while the bot drives.</p>
           </figure>
-          <figure class="bot">
-            <figcaption><span class="eyebrow">03 / Obstacle course bot</span><strong>See the wall.</strong></figcaption>
+          <figure class="bot" tabindex="0" data-scene-host>
+            <div class="bot-text">
+              <figcaption><span class="eyebrow">03 / Obstacle course bot</span><strong>See the wall.</strong></figcaption>
+              <p class="mono-copy">An ultrasonic sensor on the nose pings ahead and reads the distance. Close to the box, the bot stops and turns away.</p>
+              <p class="bot-say" data-say aria-live="polite">Hover to play</p>
+            </div>
             <div class="iso bot-ink" data-theme="light" data-bot="obstacle"></div>
-            <p class="mono-copy">An ultrasonic sensor on the nose measures the distance to whatever is ahead.</p>
           </figure>
         </div>
       </section>
@@ -112,6 +121,7 @@
   </div>
 
   <script src="assets/config.js"></script>
+  <script src="assets/scenes.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>
