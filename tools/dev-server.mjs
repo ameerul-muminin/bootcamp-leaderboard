@@ -29,7 +29,7 @@ createServer(async (req, res) => {
     let body = "";
     for await (const chunk of req) body += chunk;
     const [command, key, value] = JSON.parse(body);
-    const result = command === "GET" ? memory.get(key) ?? null : (memory.set(key, value), "OK");
+    const result = command === "PING" ? "PONG" : command === "GET" ? memory.get(key) ?? null : (memory.set(key, value), "OK");
     res.setHeader("Content-Type", "application/json");
     return res.end(JSON.stringify({ result }));
   }

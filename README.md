@@ -33,12 +33,17 @@ On the admin page:
 ### One-time setup in Vercel
 
 1. **Storage:** project → *Storage* → *Create Database* → **Upstash for Redis** (free plan)
-   → connect it to this project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+   → connect it to this project with **Production** ticked. Vercel's **Redis** integration
+   (a `REDIS_URL`) works too; any variable prefix is found.
 2. **Password:** project → *Settings → Environment Variables* → add `ADMIN_PASSWORD`
    (and optionally `SESSION_SECRET`, any long random string; otherwise the password signs sessions).
 3. **Redeploy** (Deployments → ⋯ → Redeploy) so the functions pick the variables up.
 
-The first time the admin page loads, it starts from the Day 2 scores in `data/seed.json`.
+If sign-in still fails, the admin page lists what is missing. `/api/session` shows the same
+check: which storage and password variable names the deployment can see (never their values)
+and whether the database answers.
+
+The first time the admin page loads, it starts from the Day 2 scores in `api/_seed.js`.
 Until storage is connected, the board falls back to `data/teams.csv` and `data/scores.csv`
 (or to published Google Sheet CSVs, if links are set in `assets/config.js`).
 

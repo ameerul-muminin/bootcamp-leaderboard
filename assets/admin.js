@@ -14,7 +14,7 @@
   let dirty = false;
 
   const api = async (path, options = {}) => {
-    const response = await fetch(`api/${path}`, {
+    const response = await fetch(`/api/${path}`, {
       ...options,
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
       credentials: "same-origin",
@@ -188,15 +188,21 @@
     }
   }
 
-  function showLogin(ready) {
+  // Setup status from GET api/session: what is missing, in the words of the Vercel dashboard.
+  let check = null;
+  function showLogin(ready = check?.ready) {
     $("[data-login]").hidden = false;
     $("[data-signout]").hidden = true;
+    const c = check?.check;
+    const items = [];
+    if (ready && !ready.password) items.push("<b>ADMIN_PASSWORD</b> is not set for <b>Production</b>. Project → Settings → Environment Variables → add it with the Production box ticked.");
+    if (ready && !ready.storage) items.push(`No Upstash storage variables found. Project → <b>Storage</b> → <b>Upstash for Redis</b> → <b>Connect Project</b> (tick Production).${c?.variables?.length ? ` Found only: ${c.variables.map(escape).join(", ")}.` : ""}`);
+    if (c?.storageError) items.push(escape(c.storageError));
+    else if (ready?.storage && c && !c.storageOk) items.push("Storage is connected but did not answer. Check the database is active in Upstash.");
+    if (items.length) items.push("Then <b>Deployments → ⋯ → Redeploy</b>. New variables only reach a fresh deployment.");
     const setup = $("[data-setup]");
-    const missing = [];
-    if (ready && !ready.password) missing.push("<li>In Vercel, open the project → <b>Settings → Environment Variables</b> and add <b>ADMIN_PASSWORD</b>.</li>");
-    if (ready && !ready.storage) missing.push("<li>In Vercel, open the project → <b>Storage</b> → add an <b>Upstash Redis</b> database (free) and connect it to this project.</li>");
-    setup.hidden = !missing.length;
-    setup.innerHTML = missing.length ? `<b>Setup needed</b><ol>${missing.join("")}<li>Redeploy, then come back here.</li></ol>` : "";
+    setup.hidden = !items.length;
+    setup.innerHTML = items.length ? `<b>Setup needed</b><ol>${items.map((i) => `<li>${i}</li>`).join("")}</ol>` : "";
     $("#password").focus();
   }
 
@@ -211,10 +217,10 @@
     e.preventDefault();
     const msg = $("[data-login-msg]");
     msg.textContent = "";
-    const { ok, data } = await api("session", { method: "POST", body: JSON.stringify({ password: $("#password").value }) });
-    if (!ok) { msg.textContent = data.error || "Sign in failed."; return; }
+    const { ok, status, data } = await api("session", { method: "POST", body: JSON.stringify({ password: $("#password").value }) });
+    if (!ok) { msg.textContent = data.error || `Sign in failed (server error ${status}). Check the function logs in Vercel.`; return; }
     $("#password").value = "";
-    if (!data.ready.storage) { showLogin(data.ready); msg.textContent = "Signed in, but storage is not set up yet."; return; }
+    if (!data.ready.storage) { showLogin(data.ready); msg.textContent = "Password accepted, but storage is not set up yet (see below)."; return; }
     showEditor();
   });
 
@@ -226,9 +232,16 @@
   }
 
   (async () => {
-    const { ok, data } = await api("session");
-    if (!ok) { showLogin(); toast("The admin API is not reachable. Is this deployed on Vercel?", true); return; }
-    if (data.admin && data.ready.storage) showEditor();
+    const { ok, status, data } = await api("session");
+    if (!ok) {
+      showLogin();
+      const setup = $("[data-setup]");
+      setup.hidden = false;
+      setup.innerHTML = `<b>The admin API is not answering</b> (${status === 404 ? "not found: the api folder did not deploy" : `error ${status}`}). In Vercel, open the latest deployment → <b>Functions</b> / <b>Logs</b> to see why.`;
+      return;
+    }
+    check = data;
+    if (data.admin && data.ready.storage && data.check?.storageOk !== false) showEditor();
     else showLogin(data.ready);
   })();
 })();

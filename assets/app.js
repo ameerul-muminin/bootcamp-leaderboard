@@ -129,7 +129,7 @@
   // The admin dashboard's board (api/board.js), as the same rows the CSVs give.
   async function loadBoard() {
     try {
-      const response = await fetch("api/board", { cache: "no-store" });
+      const response = await fetch("/api/board", { cache: "no-store" });
       if (!response.ok) return null;
       const board = await response.json();
       const nameOf = Object.fromEntries(board.teams.map((t) => [t.id, t.name]));

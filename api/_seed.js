@@ -1,4 +1,5 @@
-{
+// The board the admin page starts from before anything is saved (Day 2 scores).
+export default {
   "rev": 0,
   "updatedAt": null,
   "teams": [
@@ -107,4 +108,4 @@
       }
     }
   }
-}
+};

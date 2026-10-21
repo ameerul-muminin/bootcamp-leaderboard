@@ -1,20 +1,101 @@
 // Shared helpers for the API routes (files starting with "_" are not routes on Vercel).
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { createRequire } from "node:module";
-
-const seed = createRequire(import.meta.url)("../data/seed.json");
+import { connect as plainConnect } from "node:net";
+import { connect as tlsConnect } from "node:tls";
+import seed from "./_seed.js";
 
 const KEY = "board";
 const SESSION_HOURS = 12;
 
-// ---- Storage: one JSON document in Upstash Redis, over its REST API.
-// Vercel's Upstash integration sets KV_REST_API_*; a direct Upstash setup sets UPSTASH_REDIS_REST_*.
-const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+// ---- Storage: one JSON document in Redis (Upstash over REST, or any Redis over TCP).
+// Vercel's storage integrations name their variables differently (KV_REST_API_*, a custom
+// prefix, UPSTASH_REDIS_REST_*, or only a redis:// URL), so look for any of them.
+function findRedis(env = process.env) {
+  const keys = Object.keys(env).sort();
+  for (const key of keys) {
+    const rest = key.match(/^(.*)REST_API_URL$/) || key.match(/^(.*)UPSTASH_REDIS_REST_URL$/);
+    if (!rest || !env[key]) continue;
+    const tokenKey = key.replace(/URL$/, "TOKEN");
+    if (env[tokenKey]) return { url: env[key], token: env[tokenKey], from: key };
+  }
+  // An Upstash redis:// URL carries the REST token as its password and the REST host as its host.
+  for (const key of keys.filter((k) => /(REDIS|KV)_URL$/.test(k))) {
+    try {
+      const url = new URL(env[key]);
+      if (url.hostname.endsWith("upstash.io") && url.password) {
+        return { url: `https://${url.hostname}`, token: decodeURIComponent(url.password), from: key };
+      }
+      if (/^rediss?:$/.test(url.protocol)) return { tcp: url, from: key };
+    } catch {}
+  }
+  return null;
+}
 
-export const storageReady = () => Boolean(REDIS_URL && REDIS_TOKEN);
+// A minimal Redis client over TCP for plain redis:// URLs (Vercel's Redis integration):
+// one connection per call, AUTH if the URL has a password, then one command.
+function tcpCommand(url, command) {
+  const encode = (args) => `*${args.length}\r\n` + args.map((a) => { const b = Buffer.from(String(a)); return `$${b.length}\r\n${b}\r\n`; }).join("");
+  const steps = [];
+  if (url.password) steps.push(url.username && url.username !== "default" ? ["AUTH", decodeURIComponent(url.username), decodeURIComponent(url.password)] : ["AUTH", decodeURIComponent(url.password)]);
+  steps.push(command);
+  return new Promise((resolve, reject) => {
+    const options = { host: url.hostname, port: Number(url.port) || 6379, servername: url.hostname };
+    const socket = url.protocol === "rediss:" ? tlsConnect(options) : plainConnect(options);
+    const timer = setTimeout(() => { socket.destroy(); reject(new Error("Redis timed out")); }, 8000);
+    let buffer = Buffer.alloc(0);
+    const replies = [];
+    // Parses one reply from the front of the buffer; returns [value, rest] or null if incomplete.
+    const parse = (buf) => {
+      const end = buf.indexOf("\r\n");
+      if (end < 0) return null;
+      const type = String.fromCharCode(buf[0]);
+      const line = buf.subarray(1, end).toString();
+      const rest = buf.subarray(end + 2);
+      if (type === "+") return [line, rest];
+      if (type === ":") return [Number(line), rest];
+      if (type === "-") return [new Error(line), rest];
+      if (type === "$") {
+        const n = Number(line);
+        if (n < 0) return [null, rest];
+        if (rest.length < n + 2) return null;
+        return [rest.subarray(0, n).toString(), rest.subarray(n + 2)];
+      }
+      return [new Error(`Unexpected Redis reply ${type}`), Buffer.alloc(0)];
+    };
+    socket.on("data", (chunk) => {
+      buffer = Buffer.concat([buffer, chunk]);
+      for (let next; (next = parse(buffer)); ) { replies.push(next[0]); buffer = next[1]; }
+      if (replies.length >= steps.length) {
+        clearTimeout(timer);
+        socket.end();
+        const failed = replies.find((r) => r instanceof Error);
+        failed ? reject(new Error(`Redis: ${failed.message}`)) : resolve(replies.at(-1));
+      }
+    });
+    socket.on("error", (error) => { clearTimeout(timer); reject(error); });
+    socket.write(steps.map(encode).join(""));
+  });
+}
+
+const STORE = findRedis();
+const REDIS_URL = STORE?.url;
+const REDIS_TOKEN = STORE?.token;
+
+export const storageReady = () => Boolean(STORE);
+
+// For the admin page's setup check: which variables exist (names only, never values)
+// and whether storage answers.
+export async function diagnose() {
+  const seen = Object.keys(process.env).filter((k) => /REDIS|^KV_|UPSTASH|ADMIN_PASSWORD|SESSION_SECRET/.test(k)).sort();
+  let storageOk = false, storageError = "";
+  if (STORE) {
+    try { storageOk = (await redis(["PING"])) === "PONG"; } catch (error) { storageError = error.message; }
+  }
+  return { variables: seen, storageFrom: STORE?.from || null, storageOk, storageError };
+}
 
 async function redis(command) {
+  if (STORE.tcp) return tcpCommand(STORE.tcp, command);
   const response = await fetch(REDIS_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${REDIS_TOKEN}`, "Content-Type": "application/json" },
@@ -34,7 +115,7 @@ export async function writeBoard(board) {
 }
 
 // ---- Admin session: a signed, expiring token in an HttpOnly cookie.
-const SECRET = process.env.SESSION_SECRET || process.env.ADMIN_PASSWORD || "";
+const SECRET = String(process.env.SESSION_SECRET || process.env.ADMIN_PASSWORD || "").trim();
 const sign = (value) => createHmac("sha256", SECRET).update(value).digest("base64url");
 const same = (a, b) => {
   const x = Buffer.from(String(a));
@@ -42,8 +123,10 @@ const same = (a, b) => {
   return x.length === y.length && timingSafeEqual(x, y);
 };
 
-export const passwordSet = () => Boolean(process.env.ADMIN_PASSWORD);
-export const passwordMatches = (given) => passwordSet() && same(given || "", process.env.ADMIN_PASSWORD);
+// Trimmed on both sides: a pasted password often carries a stray space or newline.
+const PASSWORD = String(process.env.ADMIN_PASSWORD || "").trim();
+export const passwordSet = () => Boolean(PASSWORD);
+export const passwordMatches = (given) => passwordSet() && same(String(given || "").trim(), PASSWORD);
 
 export function sessionCookie() {
   const expires = Date.now() + SESSION_HOURS * 3600 * 1000;
