@@ -30,54 +30,42 @@
       </header>
 
       <section class="split">
-        <div class="col col-left">
-          <div class="intro">
-            <h1>Every class<br>counts.</h1>
-            <p class="mono-copy">Teams earn points from the second class onwards. The board reads straight from the scoring sheet, so a change there shows up here on the next refresh.</p>
-          </div>
-
-          <div class="cells">
-            <div class="cell">
-              <div class="eyebrow">Teams</div>
-              <div class="big" data-team-count>--</div>
-              <p class="mono-copy">Three builders each: a leader, a builder and a coder.</p>
-            </div>
-            <div class="cell">
-              <div class="eyebrow">Classes scored</div>
-              <div class="big" data-day-count>--</div>
-              <p class="mono-copy" data-updated>Waiting for the sheet.</p>
-            </div>
-          </div>
-
-          <div class="spec">
-            <table>
-              <thead><tr><th>Category</th><th>How to earn it</th><th>Points</th></tr></thead>
-              <tbody>
-                <tr><td><i class="sw" style="--c:var(--s-att)"></i>Attendance</td><td>At least one member present, from class 2</td><td>+1</td></tr>
-                <tr><td><i class="sw" style="--c:var(--s-hw)"></i>Assignment</td><td>Team homework handed in</td><td>+1</td></tr>
-                <tr><td><i class="sw" style="--c:var(--s-quiz)"></i>In-class quiz</td><td>Quiz completed in class</td><td>+1</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="col col-right">
+        <div class="col col-main">
           <div class="rank-head">
-            <h2>Team<br>Rankings</h2>
-            <div class="legend" aria-label="Legend">
-              <span><i class="sw" style="--c:var(--s-att)"></i>Attendance</span>
-              <span><i class="sw" style="--c:var(--s-hw)"></i>Assignment</span>
-              <span><i class="sw" style="--c:var(--s-quiz)"></i>Quiz</span>
+            <h1>Team<br>Rankings</h1>
+            <div class="rank-tools">
+              <div class="legend" aria-label="Legend">
+                <span><i class="sw" style="--c:var(--s-att)"></i>Attendance</span>
+                <span><i class="sw" style="--c:var(--s-hw)"></i>Assignment</span>
+                <span><i class="sw" style="--c:var(--s-quiz)"></i>Quiz</span>
+              </div>
+              <div class="view-toggle" role="tablist" aria-label="View">
+                <button role="tab" aria-selected="true" data-view="chart">Chart</button>
+                <button role="tab" aria-selected="false" data-view="table">Table</button>
+              </div>
             </div>
-          </div>
-          <div class="view-toggle" role="tablist" aria-label="View">
-            <button role="tab" aria-selected="true" data-view="chart">Chart</button>
-            <button role="tab" aria-selected="false" data-view="table">Table</button>
           </div>
           <ol class="chart" data-chart aria-label="Team rankings by total points"></ol>
           <div class="table-view" data-table hidden></div>
           <div class="tip" data-tip hidden></div>
         </div>
+
+        <aside class="col col-side">
+          <div class="cell">
+            <div class="eyebrow">Teams</div>
+            <div class="big" data-team-count>--</div>
+            <p class="mono-copy">Three builders each: a leader, a builder and a coder.</p>
+          </div>
+          <div class="cell">
+            <div class="eyebrow">Classes scored</div>
+            <div class="big" data-day-count>--</div>
+            <p class="mono-copy" data-updated>Waiting for the sheet.</p>
+          </div>
+          <div class="cell">
+            <div class="eyebrow">Points</div>
+            <p class="mono-copy">+1 attendance, +1 assignment and +1 quiz per class, from class 2.</p>
+          </div>
+        </aside>
       </section>
 
       <section class="bots" aria-labelledby="bots-title">

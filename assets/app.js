@@ -9,11 +9,11 @@
     { key: "Quiz", label: "Quiz", color: "var(--s-quiz)" },
   ];
 
-  // Small, quiet avatar tokens: a colour and an initial per character.
+  // Avatar badges: each character's colour and initials.
   const AVATARS = {
-    mario: ["#e52521", "#fff"], luigi: ["#3aa140", "#fff"], yoshi: ["#7ccf52", "#141414"],
-    toad: ["#fff", "#e52521"], "princess peach": ["#f7a8c8", "#141414"], peach: ["#f7a8c8", "#141414"],
-    bowser: ["#f2b33d", "#141414"], boo: ["#f1f0ea", "#141414"], goomba: ["#9a5b2e", "#fff"],
+    mario: ["#e52521", "#fff"], luigi: ["#2f9e44", "#fff"], yoshi: ["#7ccf52", "#13361a"],
+    toad: ["#f04a3c", "#fff"], "princess peach": ["#f48fb1", "#4a1028"], peach: ["#f48fb1", "#4a1028"],
+    bowser: ["#f2a51f", "#2d4a12"], boo: ["#c9c3e6", "#2b2440"], goomba: ["#8a4f24", "#fff"],
   };
 
   const $ = (selector) => document.querySelector(selector);
@@ -98,7 +98,8 @@
 
   function avatarHtml(name) {
     const [bg, fg] = AVATARS[String(name || "").toLowerCase().trim()] || ["#d9d7d0", "#141414"];
-    const initial = name ? escape(name.trim()[0].toUpperCase()) : "·";
+    const words = String(name || "").trim().split(/\s+/).filter(Boolean);
+    const initial = escape((words.length > 1 ? words[0][0] + words[1][0] : (words[0] || "·").slice(0, 2)).toUpperCase());
     return `<span class="avatar" style="--av:${bg};--av-ink:${fg}" title="${escape(name || "No avatar")}" aria-hidden="true">${initial}</span>`;
   }
 
@@ -111,7 +112,7 @@
         `<span class="seg" tabindex="0" style="--c:${c.color};width:calc(${(team.points[c.key] / max) * 100}% - 2px)" data-tip-text="${escape(`${team.name} · ${c.label}: ${team.points[c.key]}`)}" aria-label="${escape(`${c.label} ${team.points[c.key]}`)}"></span>`).join("");
       return `<li class="row"${team.rank === 1 && team.total > 0 ? " data-top" : ""}>
         <span class="rank">${String(team.rank).padStart(2, "0")}</span>
-        <span class="team">${avatarHtml(team.avatar)}<span class="team-name">${escape(team.name)}</span></span>
+        <span class="team">${avatarHtml(team.avatar)}<span class="team-text"><span class="team-name">${escape(team.name)}</span>${team.avatar ? `<span class="char">${escape(team.avatar)}</span>` : ""}</span></span>
         <span class="track" style="--unit:${100 / max}%"><span class="bar-fill">${segs}</span></span>
         <span class="total" aria-label="${team.total} points">${team.total}</span>
       </li>`;
