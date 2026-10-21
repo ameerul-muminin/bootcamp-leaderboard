@@ -16,45 +16,39 @@ From class 2 onwards, each team earns:
 | Assignment | team homework handed in | +1 |
 | In-class quiz | quiz done in class | +1 |
 
-## Connecting the Google Sheet
+## Entering scores (admins)
 
-The board reads two tabs, published as CSV. Publishing only these two tabs keeps
-the form responses (bKash IDs, member names) private.
+Scores are entered at **`/admin`**, behind a password. The board reads them from
+`/api/board` and refreshes every 60 s (20 s in live mode).
 
-### 1. `Teams` tab
+On the admin page:
 
-Add a tab named `Teams` and put this formula in `A1`. It mirrors the form, so a new
-registration shows up on its own:
+- pick a class tab (or **+ Class** for a new one),
+- click a cell to switch it between 0 and 1, or use **+ / −** for extra points,
+- **Everyone present** fills attendance for the whole class,
+- rename teams, change avatars, add or remove teams under **Teams**,
+- **Save** (or Ctrl/⌘ + S). If two admins edit at once, the second save is refused
+  instead of overwriting the first; reload to get their changes.
+
+### One-time setup in Vercel
+
+1. **Storage:** project → *Storage* → *Create Database* → **Upstash for Redis** (free plan)
+   → connect it to this project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+2. **Password:** project → *Settings → Environment Variables* → add `ADMIN_PASSWORD`
+   (and optionally `SESSION_SECRET`, any long random string; otherwise the password signs sessions).
+3. **Redeploy** (Deployments → ⋯ → Redeploy) so the functions pick the variables up.
+
+The first time the admin page loads, it starts from the Day 2 scores in `data/seed.json`.
+Until storage is connected, the board falls back to `data/teams.csv` and `data/scores.csv`
+(or to published Google Sheet CSVs, if links are set in `assets/config.js`).
+
+### Running it locally
 
 ```
-=QUERY('Form Responses 1'!B:C, "select C, B where C is not null label C 'Team', B 'Avatar'", 1)
+node tools/dev-server.mjs
 ```
 
-### 2. `Scores` tab
-
-Add a tab named `Scores` with one row per team per class:
-
-| Day | Team | Attendance | Assignment | Quiz | Note |
-|---|---|---|---|---|---|
-| 2 | Phoenix | 1 | 1 | 0 | |
-
-`data/scores.csv` holds Day 2 already: import it with *File > Import > Upload >
-Insert new sheet*, then rename the tab to `Scores`. Team names must match the
-`Teams` tab (case and spaces are ignored). Points can be any number, so a quiz worth 2 also works.
-
-### 3. Publish and paste the links
-
-*File > Share > Publish to web*, choose the `Teams` tab and *Comma-separated values (.csv)*,
-publish, and copy the link. Do the same for `Scores`. Paste both into `assets/config.js`:
-
-```js
-teamsCsv: "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv",
-scoresCsv: "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv",
-```
-
-The status in the top-right corner says **Live from sheet** once both load. Google
-refreshes published CSVs within about five minutes of an edit; the board re-reads every
-60 s (20 s in live mode). If the sheet can't be reached, the board falls back to `data/`.
+Opens on http://localhost:8787 with an in-memory store; the admin password is `admin`.
 
 ## Hosting
 

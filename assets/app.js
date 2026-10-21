@@ -9,12 +9,6 @@
     { key: "Quiz", label: "Quiz", color: "var(--s-quiz)" },
   ];
 
-  // Avatar badges: each character's colour and initials.
-  const AVATARS = {
-    mario: ["#e52521", "#fff"], luigi: ["#2f9e44", "#fff"], yoshi: ["#7ccf52", "#13361a"],
-    toad: ["#f04a3c", "#fff"], "princess peach": ["#f48fb1", "#4a1028"], peach: ["#f48fb1", "#4a1028"],
-    bowser: ["#f2a51f", "#2d4a12"], boo: ["#c9c3e6", "#2b2440"], goomba: ["#8a4f24", "#fff"],
-  };
 
   const $ = (selector) => document.querySelector(selector);
   const chart = $("[data-chart]");
@@ -96,12 +90,7 @@
     return { list, days: [...days].sort((a, b) => num(a) - num(b)) };
   }
 
-  function avatarHtml(name) {
-    const [bg, fg] = AVATARS[String(name || "").toLowerCase().trim()] || ["#d9d7d0", "#141414"];
-    const words = String(name || "").trim().split(/\s+/).filter(Boolean);
-    const initial = escape((words.length > 1 ? words[0][0] + words[1][0] : (words[0] || "·").slice(0, 2)).toUpperCase());
-    return `<span class="avatar" style="--av:${bg};--av-ink:${fg}" title="${escape(name || "No avatar")}" aria-hidden="true">${initial}</span>`;
-  }
+  const avatarHtml = (name) => window.Avatars.html(name);
 
   function renderChart({ list }) {
     if (!list.length) { chart.innerHTML = `<li class="empty">No teams yet.</li>`; return; }
@@ -133,20 +122,41 @@
     $("[data-day-count]").textContent = String(days.length).padStart(2, "0");
     const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     $("[data-updated]").textContent = `Last read at ${time}. Scored so far: ${days.length ? days.map((d) => "Day " + d).join(", ") : "none"}.`;
-    status.textContent = isLive ? "Live from sheet" : "Local data";
+    status.textContent = isLive ? "Live" : "Local data";
     status.dataset.state = isLive ? "live" : "local";
+  }
+
+  // The admin dashboard's board (api/board.js), as the same rows the CSVs give.
+  async function loadBoard() {
+    try {
+      const response = await fetch("api/board", { cache: "no-store" });
+      if (!response.ok) return null;
+      const board = await response.json();
+      const nameOf = Object.fromEntries(board.teams.map((t) => [t.id, t.name]));
+      const scores = Object.entries(board.days || {}).flatMap(([day, rows]) =>
+        Object.entries(rows).filter(([id]) => nameOf[id]).map(([id, s]) => ({ Day: day, Team: nameOf[id], Attendance: s.attendance, Assignment: s.assignment, Quiz: s.quiz })));
+      return { teams: board.teams.map((t) => ({ Team: t.name, Avatar: t.avatar })), scores };
+    } catch { return null; }
   }
 
   async function refresh() {
     try {
-      const [teams, scores] = await Promise.all([
-        load(config.teamsCsv, "data/teams.csv"),
-        load(config.scoresCsv, "data/scores.csv"),
-      ]);
-      const data = standings(teams.rows, scores.rows);
+      const board = await loadBoard();
+      let data, isLive;
+      if (board) {
+        data = standings(board.teams, board.scores);
+        isLive = true;
+      } else {
+        const [teams, scores] = await Promise.all([
+          load(config.teamsCsv, "data/teams.csv"),
+          load(config.scoresCsv, "data/scores.csv"),
+        ]);
+        data = standings(teams.rows, scores.rows);
+        isLive = teams.live && scores.live;
+      }
       renderChart(data);
       renderTable(data);
-      renderMeta(data, teams.live && scores.live);
+      renderMeta(data, isLive);
     } catch (error) {
       console.error(error);
       status.textContent = "Offline";

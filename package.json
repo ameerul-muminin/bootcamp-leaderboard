@@ -1,0 +1,6 @@
+{
+  "name": "bootcamp-leaderboard",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" }
+}

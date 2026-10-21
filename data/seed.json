@@ -1,0 +1,110 @@
+{
+  "rev": 0,
+  "updatedAt": null,
+  "teams": [
+    {
+      "id": "neuroxcel",
+      "name": "NeuroxCel",
+      "avatar": "Luigi"
+    },
+    {
+      "id": "phoenix",
+      "name": "Phoenix",
+      "avatar": "Mario"
+    },
+    {
+      "id": "botforge",
+      "name": "BotForge",
+      "avatar": "Goomba"
+    },
+    {
+      "id": "genesis",
+      "name": "Genesis",
+      "avatar": "Yoshi"
+    },
+    {
+      "id": "optimus",
+      "name": "Optimus",
+      "avatar": "Toad"
+    },
+    {
+      "id": "brain-freeze",
+      "name": "Brain Freeze",
+      "avatar": "Goomba"
+    },
+    {
+      "id": "tar",
+      "name": "TAR",
+      "avatar": "Bowser"
+    },
+    {
+      "id": "robosquad",
+      "name": "RoboSquad",
+      "avatar": "Princess Peach"
+    },
+    {
+      "id": "varitas",
+      "name": "Varitas",
+      "avatar": "Boo"
+    },
+    {
+      "id": "aporos",
+      "name": "Aporos",
+      "avatar": "Toad"
+    }
+  ],
+  "days": {
+    "2": {
+      "brain-freeze": {
+        "attendance": 1,
+        "assignment": 0,
+        "quiz": 0
+      },
+      "varitas": {
+        "attendance": 1,
+        "assignment": 0,
+        "quiz": 0
+      },
+      "aporos": {
+        "attendance": 1,
+        "assignment": 1,
+        "quiz": 0
+      },
+      "phoenix": {
+        "attendance": 1,
+        "assignment": 1,
+        "quiz": 0
+      },
+      "genesis": {
+        "attendance": 1,
+        "assignment": 1,
+        "quiz": 0
+      },
+      "botforge": {
+        "attendance": 1,
+        "assignment": 0,
+        "quiz": 0
+      },
+      "optimus": {
+        "attendance": 1,
+        "assignment": 1,
+        "quiz": 0
+      },
+      "tar": {
+        "attendance": 1,
+        "assignment": 1,
+        "quiz": 0
+      },
+      "neuroxcel": {
+        "attendance": 0,
+        "assignment": 0,
+        "quiz": 0
+      },
+      "robosquad": {
+        "attendance": 0,
+        "assignment": 0,
+        "quiz": 0
+      }
+    }
+  }
+}

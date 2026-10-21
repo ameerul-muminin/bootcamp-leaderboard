@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Score Entry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+  <div class="frame">
+    <aside class="rail" aria-hidden="true">
+      <div class="rail-inner">
+        <div class="rail-mark">EDURS</div>
+        <div class="rail-title">Admin</div>
+        <svg class="rail-arrow" viewBox="0 0 64 64"><path d="M6 58 L44 20 M20 18 H46 V44" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="square"/></svg>
+      </div>
+    </aside>
+
+    <main class="sheet">
+      <header class="bar">
+        <span>Score entry</span>
+        <span class="bar-mid"><a href="./">View the board ↗</a></span>
+        <span class="bar-right"><button class="link" data-signout hidden>Sign out</button></span>
+      </header>
+
+      <!-- Sign in -->
+      <section class="pane" data-login hidden>
+        <h1>Sign in</h1>
+        <p class="mono-copy">Only bootcamp admins can change scores. Everyone else sees the board.</p>
+        <form class="login" data-login-form>
+          <label class="eyebrow" for="password">Admin password</label>
+          <div class="login-row">
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button class="btn btn-ink" type="submit">Sign in</button>
+          </div>
+          <p class="msg" data-login-msg role="alert"></p>
+        </form>
+        <div class="setup" data-setup hidden></div>
+      </section>
+
+      <!-- Editor -->
+      <section data-editor hidden>
+        <div class="toolbar">
+          <div class="days" role="tablist" aria-label="Class" data-days></div>
+          <div class="save-group">
+            <span class="save-state" data-save-state>All saved</span>
+            <button class="btn btn-ink" data-save disabled>Save</button>
+          </div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-head">
+            <h2 data-day-title>Class</h2>
+            <div class="quick">
+              <button class="btn" data-fill="attendance">Everyone present</button>
+              <button class="btn" data-clear>Clear class</button>
+              <button class="btn btn-danger" data-remove-day>Delete class</button>
+            </div>
+          </div>
+          <table class="grid">
+            <thead>
+              <tr><th>Team</th><th>Attendance</th><th>Assignment</th><th>Quiz</th><th>Class</th><th>Total</th></tr>
+            </thead>
+            <tbody data-grid></tbody>
+          </table>
+          <p class="mono-copy hint">Click a cell to switch 0 ↔ 1. Use + and − for extra points. Attendance counts from class 2.</p>
+        </div>
+
+        <div class="pane">
+          <div class="pane-head">
+            <h2>Teams</h2>
+            <button class="btn" data-add-team>Add team</button>
+          </div>
+          <div class="teams" data-teams></div>
+        </div>
+      </section>
+
+      <div class="toast" data-toast role="status" hidden></div>
+    </main>
+  </div>
+  <script src="assets/avatars.js"></script>
+  <script src="assets/admin.js"></script>
+</body>
+</html>
