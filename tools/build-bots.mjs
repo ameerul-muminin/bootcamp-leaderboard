@@ -29,7 +29,7 @@ const WHEEL_Y = 60;
 const AXLE = [0, WHEEL_R];
 const CASTER = [-66, 0];
 const FRONT = PLATE.x + PLATE.w;
-const SONAR = [FRONT + 15.6, 0, DECK + 7]; // face of the ultrasonic transducers
+const ESP = [32, 22, DECK + 12]; // the ESP32, where the phone's Bluetooth signal lands
 const BALL_R = 21;
 const BALL_AT = [FRONT + 26, 0, BALL_R]; // ball centre while it sits in the cradle
 
@@ -271,18 +271,14 @@ const ADD_ONS = {
       return { back, front };
     },
   },
-  sonar: {
-    reach: 18,
-    draw({ P, S, L, D, slab, cyl, frame, accent }) {
-      let svg = S(slab({ x: FRONT - 10, y: -18, w: 12, d: 36, r: 1 }, DECK, 3, 2, 0.3), { tone: "mid" });
-      svg += S(slab({ x: FRONT + 2, y: -22.5, w: 1.6, d: 45, r: 0.3 }, DECK - 4, 22, 2), { tone: "mid", crease: "none" });
-      for (const y of [-13, 13]) {
-        const F = frame([FRONT + 3.6, y, DECK + 7], [1, 0, 0]);
-        svg += S(G.disc(0, 12, 8, F, P), { tone: "hi", lit: accent });
-        svg += L(G.circleOf(F, 12, 5.2, P), { tone: "mid" });
-        svg += D(G.dotsOf(F, 12, 2.6, 8, P, { all: true }), { size: 0.4, tone: "mid" });
-      }
-      svg += S(cyl(FRONT + 1, 0, 1.6, DECK + 12, 1, 12), { tone: "lo" });
+  bumper: {
+    reach: 8,
+    // A plain front bumper: the course bot has no sensors, the phone does the steering.
+    draw({ S, D, at, slab }) {
+      let svg = "";
+      for (const y of [-34, 34]) svg += S(slab({ x: FRONT - 6, y: y - 4, w: 8, d: 8, r: 0.8 }, DECK, 5, 2, 0.3), { tone: "mid" });
+      svg += S(slab({ x: FRONT, y: -50, w: 8, d: 100, r: 2.5 }, 8, 18, 3, 0.6), { tone: "mid" });
+      svg += D([-34, 34].map((y) => at([FRONT + 8, y, 17])), { size: 0.6 });
       return { back: svg };
     },
   },
@@ -304,17 +300,58 @@ function ball(P, centre) {
     `<g data-part="seams" data-cx="${cx.toFixed(1)}" data-cy="${cy.toFixed(1)}">${L(seams.join(""), { tone: "mid" })}</g>`;
 }
 
+// A phone lying beside the arena with a Bluetooth remote on its screen. The d-pad's
+// "up" points along +x, the way the robots drive. Buttons carry data-btn so
+// scenes.js can light the one being pressed.
+function phone(P, cx, cy) {
+  const { S, L } = draw(P);
+  const H = 7;
+  const body = { x: cx - 60, y: cy - 30, w: 120, d: 60, r: 9 };
+  const top = H + 0.4;
+  let svg = `<path class="iso-halo" d="${k.haloOf(body, 0, H, P)}" style="filter:blur(5px)"/>`;
+  svg += S(k.slabOf(body, 0, H, P, 6, 0.8), { tone: "mid", inner: L(k.sideSeam(body, H / 2, P, 6), { tone: "faint" }) });
+  svg += S(k.slabOf(k.insetPlan(body, 4), H, 0.4, P, 6), { tone: "hi", crease: "none" });
+  svg += L(k.planOutline({ x: cx + 50, y: cy - 7, w: 2.4, d: 14, r: 1.2 }, top, P, 3), { tone: "mid" });
+  const chevron = (x, y, dx, dy) => k.onTop([[x - dx * 2.6 - dy * 3.4, y - dy * 2.6 - dx * 3.4], [x + dx * 2.6, y + dy * 2.6], [x - dx * 2.6 + dy * 3.4, y - dy * 2.6 + dx * 3.4]], top + 1.6, P);
+  const pad = [cx + 10, cy];
+  const buttons = [["down", -15, 0, -1, 0], ["right", 0, -15, 0, -1], ["left", 0, 15, 0, 1], ["up", 15, 0, 1, 0]];
+  for (const [name, dx, dy, ux, uy] of buttons) {
+    const [x, y] = [pad[0] + dx, pad[1] + dy];
+    svg += `<g data-btn="${name}">${S(k.cylinder(x, y, 6.6, top, 1.6, P, 28, 0.4), { tone: "mid" })}${L(chevron(x, y, ux, uy), { tone: "hi" })}</g>`;
+  }
+  // The Bluetooth rune, drawn on the screen in (left, forward) steps from its centre.
+  const [bx, by] = [cx - 34, cy];
+  const rune = [[-4.5, -4.5], [4.5, 4.5], [0, 9], [0, -9], [4.5, -4.5], [-4.5, 4.5]].map(([v, u]) => [bx + u, by + v]);
+  svg += L(k.onTop(rune, top, P), { tone: "lit" }).replace("<path ", '<path style="stroke-width:1.4" ');
+  return { svg, antenna: k.iso([cx + 40, cy, top], P).map((v) => +v.toFixed(1)) };
+}
+
+// A traffic cone: a square foot and a turned body with a reflective band.
+function cone(P, x, y) {
+  const { S, L } = draw(P);
+  const F = G.frameAlong([x, y, 2], [0, 0, 1]);
+  const slope = -7 / 27;
+  return S(k.slabOf({ x: x - 12, y: y - 12, w: 24, d: 24, r: 2.5 }, 0, 2, P, 3, 0.4), { tone: "mid" }) +
+    S(G.solidOf([[0, 10], [3, 9], [30, 2], [31, 1.4]], F, P), { tone: "hi", lit: true, inner: L(G.arcOf(F, 14, 9 + slope * 11, P, { slope }) + G.arcOf(F, 19, 9 + slope * 16, P, { slope }), { tone: "hi" }) });
+}
+
+// What every scene tells scenes.js about the phone and the robot's radio.
+const radio = (P, ph) => ({ phone: ph.antenna, origin: k.iso([0, 0, 0], P).map((v) => +v.toFixed(2)), esp: ESP });
+
 const SCENES = {
   sumo: {
-    label: "Sumo bot: two kit robots face each other on a raised sumo ring. Ours carries an orange steel wedge plow; it drives under the other robot and pushes it off the edge.",
+    label: "Sumo bot: two kit robots face each other on a raised sumo ring. Ours carries an orange steel wedge plow and is driven from a phone over Bluetooth; it drives under the other robot and pushes it off the edge.",
     build() {
       const RING = 236;
       const RING_H = 24;
       const START = 150;
+      const PHONE = [-236, 206];
       const P = k.fitProjection([
         ...k.boxCorners({ x: -RING, y: -RING, w: RING * 2, d: RING * 2, r: 0 }, 0, RING_H),
         [-START, 0, RING_H + 70], [START, 0, RING_H + 70],
+        [PHONE[0] - 60, PHONE[1] + 30, 0], [PHONE[0] + 60, PHONE[1] + 30, 0],
       ], WIDTH, HEIGHT, { pad: 18, azimuth: AZIMUTH });
+      const ph = phone(P, ...PHONE);
       const { S, L } = draw(P);
       const dohyo = `<path class="iso-halo" d="${k.haloOf({ x: -RING, y: -RING, w: RING * 2, d: RING * 2, r: RING }, 0, RING_H, P)}"/>` +
         S(k.cylinder(0, 0, RING, 0, RING_H, P, 120, 1.4), { tone: "lo" }) +
@@ -325,23 +362,26 @@ const SCENES = {
       const theirs = robot(P, { heading: 180, addOn: ADD_ONS.plow, accent: false });
       return {
         P,
-        body: dohyo + part(P, "ours", ours.body, [-START, 0, RING_H]) + part(P, "theirs", theirs.body, [START, 0, RING_H]),
-        meta: { ring: RING, ringH: RING_H, start: START, reach: FRONT + 42 },
+        body: dohyo + part(P, "ours", ours.body, [-START, 0, RING_H]) + part(P, "theirs", theirs.body, [START, 0, RING_H]) + ph.svg + `<g data-part="waves"></g>`,
+        meta: { ring: RING, ringH: RING_H, start: START, reach: FRONT + 42, ...radio(P, ph) },
       };
     },
   },
   soccer: {
-    label: "Soccer bot: the kit robot carries a ball in a U-shaped cradle towards a goal, stops, and lets the ball roll on into the net.",
+    label: "Soccer bot: driven from a phone over Bluetooth, the kit robot carries a ball in a U-shaped cradle towards a goal, stops, and lets the ball roll on into the net.",
     build() {
       const GOAL = 236;
       const MOUTH = 74;
       const BAR = 76;
       const DEPTH = 56;
       const START = -150;
+      const PHONE = [-150, 176];
       const P = k.fitProjection([
         ...k.boxCorners({ x: START - 70, y: -120, w: GOAL + DEPTH - START + 74, d: 240, r: 0 }, 0, 0),
         [GOAL, -MOUTH, BAR], [GOAL + DEPTH, MOUTH, BAR], [START, 0, 70],
+        [PHONE[0] - 60, PHONE[1] + 30, 0], [PHONE[0] + 60, PHONE[1] + 30, 0],
       ], WIDTH, HEIGHT, { pad: 18, azimuth: AZIMUTH });
+      const ph = phone(P, ...PHONE);
       const { S, L, D } = draw(P);
       const mat = { x: START - 70, y: -120, w: GOAL + DEPTH - START + 74, d: 240, r: 6 };
       const pitch = `<path class="iso-halo" d="${k.haloOf(mat, 0, 2, P)}"/>` +
@@ -366,42 +406,40 @@ const SCENES = {
       const ours = robot(P, { addOn: ADD_ONS.cradle });
       return {
         P,
-        body: pitch + farGoal + part(P, "ours", ours.body, [START, 0, 0]) + part(P, "ball", ball(P, BALL_AT), [START, 0, 0]) + part(P, "ours-front", ours.front, [START, 0, 0]) + nearGoal + `<g data-part="confetti"></g>`,
-        meta: { start: START, goal: GOAL, depth: DEPTH, ballAt: BALL_AT[0], ballR: BALL_R },
+        body: pitch + farGoal + part(P, "ours", ours.body, [START, 0, 0]) + part(P, "ball", ball(P, BALL_AT), [START, 0, 0]) + part(P, "ours-front", ours.front, [START, 0, 0]) + nearGoal + ph.svg + `<g data-part="waves"></g><g data-part="confetti"></g>`,
+        meta: { start: START, goal: GOAL, depth: DEPTH, ballAt: BALL_AT[0], ballR: BALL_R, ...radio(P, ph) },
       };
     },
   },
   obstacle: {
-    label: "Obstacle course bot: the kit robot with an ultrasonic sensor on its nose drives towards a cardboard box, measures the distance as it closes in, stops short and turns away.",
+    label: "Obstacle course bot: driven from a phone over Bluetooth, the kit robot follows forward, left and right commands past rows of cones to a chequered finish line.",
     build() {
-      const BOX = { x: 236, y: -58, w: 64, d: 116, r: 1.5 };
-      const BOX_H = 92;
-      const START = -160;
-      const P = k.fitProjection([
-        ...k.boxCorners({ x: START - 100, y: -110, w: BOX.x + BOX.w - START + 100, d: 220, r: 0 }, 0, 0),
-        [BOX.x + BOX.w, BOX.y, BOX_H], [START, 0, 70],
-      ], WIDTH, HEIGHT, { pad: 18, azimuth: AZIMUTH });
+      const START = -210, TURN = -20, LANE_A = -55, LANE_B = 55, FINISH = 236;
+      const PHONE = [-196, 176];
+      const floor = { x: -300, y: -170, w: 590, d: 382, r: 8 };
+      const P = k.fitProjection([...k.boxCorners(floor, 0, 0), [START, LANE_A, 70], [FINISH, LANE_B, 70]], WIDTH, HEIGHT, { pad: 18, azimuth: AZIMUTH });
       const { S, L } = draw(P);
-      const floor = { x: START - 100, y: -110, w: BOX.x + BOX.w - START + 110, d: 220, r: 6 };
-      const lane = `<path class="iso-halo" d="${k.haloOf(floor, 0, 2, P)}"/>` +
-        S(k.slabOf(floor, -2, 2, P, 4, 0.6), { tone: "lo", crease: "none" }) +
-        L([-70, 70].map((y) => k.lineOnTop([floor.x, y], [floor.x + floor.w, y], 0, P)).join(""), { tone: "faint" });
-      const tape = { x: BOX.x - 0.4, y: -9, w: BOX.w + 0.8, d: 18, r: 0 };
-      const box = `<path class="iso-halo" d="${k.haloOf(BOX, 0, BOX_H, P)}" style="filter:blur(5px)"/>` +
-        S(k.slabOf(BOX, 0, BOX_H, P, 2, 0.6), { tone: "mid", inner: L(k.sideSeam(BOX, BOX_H - 14, P, 2), { tone: "faint" }) }) +
-        L(k.lineOnTop([BOX.x, 0], [BOX.x + BOX.w, 0], BOX_H, P), { tone: "lo" }) +
-        S(k.slabOf(tape, BOX_H, 0.4, P, 2), { tone: "lo", crease: "none" }) +
-        L(k.segment([BOX.x, -9, BOX_H], [BOX.x, -9, BOX_H - 26], P) + k.segment([BOX.x, 9, BOX_H], [BOX.x, 9, BOX_H - 26], P), { tone: "lo" });
-      const h0 = robot(P, { addOn: ADD_ONS.sonar });
-      const h90 = robot(P, { heading: 90, addOn: ADD_ONS.sonar });
-      const pingCentre = [START + SONAR[0], 0, SONAR[2]];
-      const pingF = G.frameAlong(pingCentre, [1, 0, 0]);
-      const [cx, cy] = k.iso(pingCentre, P);
-      const pings = [0, 1, 2].map((i) => `<path data-ping="${i}" class="iso-line" data-tone="lit" d="${G.circleOf(pingF, 0, 9, P)}" data-cx="${cx.toFixed(1)}" data-cy="${cy.toFixed(1)}" opacity="0" style="stroke-width:1.1"/>`).join("");
+      let ground = `<path class="iso-halo" d="${k.haloOf(floor, 0, 2, P)}"/>` + S(k.slabOf(floor, -2, 2, P, 4, 0.6), { tone: "lo", crease: "none" });
+      ground += L(k.onTop([[START, LANE_A], [TURN, LANE_A], [TURN, LANE_B], [FINISH + 30, LANE_B]], 0, P), { tone: "mid", dashed: true });
+      // Chequered finish strip across lane B: two rows of squares, alternate ones inked.
+      const cell = 8;
+      const dark = [];
+      for (let i = 0; i < 2; i++) for (let j = 0; j < 14; j++) {
+        if ((i + j) % 2) continue;
+        const x = FINISH + i * cell, y = LANE_B - 56 + j * cell;
+        dark.push(k.onTop([[x, y], [x + cell, y], [x + cell, y + cell], [x, y + cell]], 0, P, true));
+      }
+      ground += `<path d="${dark.join("")}" fill="var(--anatomy-hi)"/>` + L(k.planOutline({ x: FINISH, y: LANE_B - 56, w: cell * 2, d: cell * 14, r: 0 }, 0, P, 2), { tone: "hi" });
+      const cones = [[130, -62], [130, -102], [130, -142], [-150, 64], [-150, 104], [-150, 144]]
+        .sort((a, b) => k.depthOf([...a, 0], P) - k.depthOf([...b, 0], P)).map(([x, y]) => cone(P, x, y)).join("");
+      const h0 = robot(P, { addOn: ADD_ONS.bumper, accent: false });
+      const h90 = robot(P, { heading: 90, addOn: ADD_ONS.bumper, accent: false });
+      const ph = phone(P, ...PHONE);
       return {
         P,
-        body: lane + part(P, "h90", h90.body, [START, 0, 0], ` opacity="0"`) + part(P, "ours", h0.body, [START, 0, 0]) + `<g data-part="pings">${pings}</g>` + box,
-        meta: { start: START, box: BOX.x, sonar: SONAR[0] },
+        body: ground + part(P, "h90", h90.body, [START, LANE_A, 0], ` opacity="0"`) + part(P, "ours", h0.body, [START, LANE_A, 0]) +
+          `<g data-part="cones">${cones}</g>` + ph.svg + `<g data-part="waves"></g>`,
+        meta: { start: START, turn: TURN, laneA: LANE_A, laneB: LANE_B, finish: FINISH, ...radio(P, ph) },
       };
     },
   },

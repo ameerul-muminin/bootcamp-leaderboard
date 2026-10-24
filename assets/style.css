@@ -192,3 +192,7 @@ body[data-live] .char { font-size: 13px; }
 }
 
 @media (prefers-reduced-motion: reduce) { .seg { transition: none; } }
+
+/* Character icons sit on a tinted tile, a little larger than the initials badge. */
+.avatar-icon { padding: 2px; overflow: hidden; }
+.avatar-icon svg { width: 100%; height: 100%; display: block; }

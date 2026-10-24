@@ -8,3 +8,10 @@
   --anatomy-weight:.75px;
 }
 .bot-ink svg{width:100%;height:auto;display:block}
+
+/* The phone's pressed d-pad button, and the Bluetooth waves on their way to the robot. */
+.bot-ink [data-btn][data-on] .iso-top,
+.bot-ink [data-btn][data-on] .iso-shade { fill: #e8562a; }
+.bot-ink [data-btn][data-on] .iso-edge { stroke: #b23d18; }
+.bot-ink [data-btn][data-on] .iso-line { stroke: #fff; }
+.bot-ink [data-part="waves"] path { fill: none; stroke: #e8562a; stroke-width: 1.6; stroke-linecap: round; }

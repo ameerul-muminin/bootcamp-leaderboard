@@ -64,7 +64,7 @@ Every push to `main` redeploys. (GitHub Pages also works: *Settings > Pages > `m
 ## The robot figures
 
 The three bots are isometric SVGs drawn from the bootcamp kit (ESP32, L298N, 2 × TT
-motor, 65 mm wheels, caster, 4 × 18650, LM2596, DPDT switch, IR sensors) with the
+motor, 65 mm wheels, caster, 4 × 18650, LM2596, DPDT switch) with the
 [Anatomy](https://github.com/wheresryan22/anatomy) kit (MIT, vendored in `tools/anatomy`).
 To change them, edit `tools/build-bots.mjs` and run:
 
@@ -73,6 +73,8 @@ node tools/build-bots.mjs
 ```
 
 The page loads the output from `assets/bots/`. Each figure is a small scene that plays
-on hover (tap on phones): the sumo bot pushes another bot off the ring, the soccer bot
-scores and celebrates, and the obstacle bot pings a box, stops and turns. The motion
+on hover (tap on phones): each bot is driven from a phone over Bluetooth (the pressed
+button lights up and signal waves travel to the ESP32): the sumo bot pushes another bot
+off the ring, the soccer bot scores and celebrates, and the obstacle course bot follows
+forward, left and right commands past cones to the finish line. The motion
 lives in `assets/scenes.js` and stays off under the system's reduced-motion setting.

@@ -25,7 +25,36 @@
       el.setAttribute("transform", `translate(${sx.toFixed(2)} ${sy.toFixed(2)})${extra}`);
     };
     const fade = (el, a) => el && el.setAttribute("opacity", a >= 0.999 ? "1" : a.toFixed(3));
-    return { meta, parts, screen, move, fade, svg };
+    const r = { meta, parts, screen, move, fade, svg };
+    if (meta.phone) r.remote = remote(r);
+    return r;
+  }
+
+  // The phone: lights the d-pad button being pressed and sends Bluetooth waves
+  // from the phone to the robot's ESP32 while it is held.
+  function remote(r) {
+    const { phone: A, origin, esp } = r.meta;
+    const arcs = [0, 1, 2].map(() => r.parts.waves.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "path")));
+    const buttons = [...r.svg.querySelectorAll("[data-btn]")];
+    let held = undefined;
+    const f1 = (v) => v.toFixed(1);
+    return {
+      update(t, button, at, heading = 0) {
+        if (button !== held) { buttons.forEach((el) => el.toggleAttribute("data-on", el.dataset.btn === button)); held = button; }
+        const [ex, ey] = heading === 90 ? [-esp[1], esp[0]] : [esp[0], esp[1]];
+        const [sx, sy] = r.screen([at[0] + ex, at[1] + ey, (at[2] || 0) + esp[2]]);
+        const dx = origin[0] + sx - A[0], dy = origin[1] + sy - A[1];
+        const len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+        arcs.forEach((el, i) => {
+          if (!button) { el.setAttribute("opacity", "0"); return; }
+          const f = (t * 1.4 + i / 3) % 1;
+          const cx = A[0] + dx * f, cy = A[1] + dy * f, rr = 5 + f * 8;
+          const back = rr * 0.5;
+          el.setAttribute("d", `M${f1(cx - uy * rr - ux * back)} ${f1(cy + ux * rr - uy * back)}Q${f1(cx + ux * rr * 0.7)} ${f1(cy + uy * rr * 0.7)} ${f1(cx + uy * rr - ux * back)} ${f1(cy - ux * rr - uy * back)}`);
+          el.setAttribute("opacity", Math.sin(Math.PI * f).toFixed(2));
+        });
+      },
+    };
   }
 
   // ---- Sumo: drive in, shove, push the other bot over the edge, drop it.
@@ -58,6 +87,7 @@
         const back = inOut(span(t, 4.9, 5.9));
         ours = lerp(ours, -start, back);
         r.move(r.parts.ours, [ours, 0, ringH]);
+        r.remote.update(t, t > 0.4 && t < 3.1 ? "up" : t > 4.9 && t < 5.9 ? "down" : null, [ours, 0, ringH]);
         const reset = span(t, 4.9, 5.4);
         if (t < 5.4) { r.move(r.parts.theirs, [theirs, 0, z]); r.fade(r.parts.theirs, 1 - reset); }
         else { r.move(r.parts.theirs, [start, 0, ringH]); r.fade(r.parts.theirs, span(t, 5.4, 6.0)); }
@@ -109,6 +139,7 @@
         const rx = lerp(x, start, back);
         r.move(r.parts.ours, [rx, 0, hop]);
         r.move(r.parts["ours-front"], [rx, 0, hop]);
+        r.remote.update(t, t > 0.3 && t < 1.55 ? "up" : t >= 1.55 && t < 2.0 ? "down" : t > 4.8 && t < 5.8 ? "down" : null, [rx, 0, hop]);
         const turns = ((bx - start) / ballR) * (180 / Math.PI);
         if (t < 4.8) {
           r.move(r.parts.ball, [bx, 0, 0]);
@@ -137,50 +168,48 @@
     };
   }
 
-  // ---- Obstacle: ping while closing in, read the distance, stop, turn, leave.
+  // ---- Obstacle course: the phone sends forward, left, forward, right, forward;
+  // the robot follows past the cones to the finish line.
   function obstacle(r) {
-    const { start, box, sonar } = r.meta;
-    const stopAt = box - 50 - sonar; // stop with the transducers 5 cm from the box
-    const pings = [...r.svg.querySelectorAll("[data-ping]")];
-    const cx = +pings[0].dataset.cx, cy = +pings[0].dataset.cy;
-    const xAt = (t) => lerp(start, stopAt, out(span(t, 0.3, 2.5)));
-    const PERIOD = 0.42, SPEED = 320;
+    const { start, turn, laneA, laneB, finish } = r.meta;
+    const robots = r.parts.ours;
+    const cones = r.parts.cones;
+    // Cones sit in front of the robot while it is in lane A and behind it once it is in lane B.
+    const conesBehind = (behind) => {
+      const parent = robots.parentNode;
+      if (behind) { if (cones.nextSibling !== r.parts.h90) parent.insertBefore(cones, r.parts.h90); }
+      else if (robots.nextSibling !== cones) parent.insertBefore(cones, robots.nextSibling);
+    };
+    const STEPS = [
+      // [from, to, button, say]
+      [0.4, 1.8, "up", "Forward"],
+      [1.8, 2.4, "left", "Left"],
+      [2.4, 3.3, "up", "Forward"],
+      [3.3, 3.9, "right", "Right"],
+      [3.9, 5.2, "up", "Forward"],
+    ];
     return {
-      length: 5.6,
+      length: 6.8,
       pose(t) {
-        const x = xAt(t);
-        const turnT = inOut(span(t, 2.9, 3.5));
-        const away = inQ(span(t, 3.5, 4.6)) * 300;
-        const gone = span(t, 4.2, 4.6);
-        const back = span(t, 4.8, 5.4);
-        r.move(r.parts.ours, t < 4.8 ? [x, 0, 0] : [start, 0, 0]);
-        r.move(r.parts.h90, [x, away, 0]);
-        r.fade(r.parts.ours, t < 4.8 ? 1 - turnT : back);
-        r.fade(r.parts.h90, t < 4.8 ? turnT * (1 - gone) : 0);
-        // A ping leaves every PERIOD seconds and fades as it nears the box.
-        pings.forEach((el, i) => {
-          let shown = 0;
-          for (let n = i; n < 12; n += pings.length) {
-            const t0 = 0.3 + n * PERIOD;
-            if (t0 > 2.8 || t < t0) continue;
-            const from = xAt(t0) + sonar;
-            const travel = (t - t0) * SPEED;
-            const at = from + travel;
-            if (at > box) continue;
-            const [ox, oy] = r.screen([at - (start + sonar), 0, 0]);
-            const s = Math.min(2.2, 1 + travel / 120);
-            el.setAttribute("transform", `translate(${(cx + ox).toFixed(1)} ${(cy + oy).toFixed(1)}) scale(${s.toFixed(3)}) translate(${-cx} ${-cy})`);
-            shown = clamp((box - at) / 120) * 0.9;
-          }
-          el.setAttribute("opacity", shown.toFixed(2));
-        });
-        const cm = Math.max(0, (box - (x + sonar)) / 10);
-        if (t < 0.3) return "Ready";
-        if (t < 2.6) return `Distance ${cm.toFixed(1)} cm`;
-        if (t < 2.9) return `Obstacle · ${cm.toFixed(0)} cm`;
-        if (t < 3.5) return "Turning";
-        if (t < 4.8) return "Clear";
-        return "Reset";
+        let x = start, y = laneA, heading = 0, mix = 0;
+        x = lerp(start, turn, inOut(span(t, 0.4, 1.8)));
+        if (t >= 1.8) { mix = inOut(span(t, 1.8, 2.4)); heading = mix > 0.5 ? 90 : 0; }
+        if (t >= 2.4) { y = lerp(laneA, laneB, inOut(span(t, 2.4, 3.3))); heading = 90; mix = 1; }
+        if (t >= 3.3) { mix = 1 - inOut(span(t, 3.3, 3.9)); heading = mix > 0.5 ? 90 : 0; }
+        if (t >= 3.9) { x = lerp(turn, finish - 20, inOut(span(t, 3.9, 5.2))); mix = 0; heading = 0; }
+        const gone = span(t, 5.9, 6.25);
+        const back = span(t, 6.25, 6.8);
+        if (t >= 6.25) { x = start; y = laneA; mix = 0; heading = 0; }
+        r.move(robots, [x, y, 0]);
+        r.move(r.parts.h90, [x, y, 0]);
+        r.fade(robots, (1 - mix) * (1 - gone) * (t >= 6.25 ? back : 1));
+        r.fade(r.parts.h90, mix * (1 - gone));
+        conesBehind(t >= 2.4 && t < 6.25);
+        const step = STEPS.find(([a, b]) => t >= a && t < b);
+        r.remote.update(t, step ? step[2] : null, [x, y, 0], heading);
+        if (step) return step[3];
+        if (t >= 5.2 && t < 6.25) return "Finish!";
+        return t < 0.4 ? "Ready" : "Reset";
       },
     };
   }
