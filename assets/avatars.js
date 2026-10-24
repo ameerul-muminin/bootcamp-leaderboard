@@ -22,17 +22,18 @@
     mario: plumber("#e52521", "#b8141a", "M28.5 23.5v-7l3.5 4 3.5-4v7", INK),
     luigi: plumber("#2f9e44", "#1f7a32", "M30 16v7.5h5", "#5a3418"),
 
-    yoshi: `
-      <path d="M9 30l-6 3 6 4zM8 40l-6 5 7 3zM11 50l-5 6 8 1z" fill="#f2771f" ${o}/>
-      <ellipse cx="22" cy="42" rx="14" ry="15" fill="#6cc24a" ${o}/>
-      <circle cx="41" cy="34" r="17" fill="#6cc24a" ${o}/>
-      <path d="M12 47c3 8 11 12 21 12 9 0 16-4 18-10-9 3-25 3-39-2z" fill="#fff" ${o}/>
-      <path d="M17 50c6 2 15 2 22 1-3 3-8 4-12 4-4 0-8-2-10-5z" fill="#d81e3a"/>
-      <ellipse cx="17.5" cy="22" rx="7.5" ry="10.5" fill="#6cc24a" ${o}/><ellipse cx="29" cy="19" rx="7.5" ry="10.5" fill="#6cc24a" ${o}/>
-      <ellipse cx="18" cy="23" rx="5" ry="7.6" fill="#fff" ${o}/><ellipse cx="29.5" cy="20" rx="5" ry="7.6" fill="#fff" ${o}/>
-      <ellipse cx="19.6" cy="25" rx="2.6" ry="4.4" fill="#1d2f8f"/><ellipse cx="31" cy="22" rx="2.6" ry="4.4" fill="#1d2f8f"/>
-      <circle cx="20.4" cy="23" r="1" fill="#fff"/><circle cx="31.8" cy="20" r="1" fill="#fff"/>
-      <circle cx="49" cy="25" r="1.5" fill="#2d6b1f"/><circle cx="54" cy="28" r="1.5" fill="#2d6b1f"/>`,
+    yoshi: `<g transform="translate(2.6 2.4) scale(.92)">
+    <path d="M13 26c-5-1-8 2-7 6 3-1 5 0 6 2zM9 37c-5 0-7 4-5 7 3-2 5-1 7 1zM10 48c-4 1-5 5-2 8 2-2 5-2 7-1z" fill="#f2771f" ${o}/>
+    <path d="M15 56C8 50 7 40 9 32c2-7 7-12 14-14 6-2 11 0 14 2 3-4 9-6 15-4 8 3 11 11 9 19-2 7-9 11-16 10-3 7-10 12-19 12-4 0-8-0-11-1z" fill="#6cc24a" ${o}/>
+    <path d="M14 47c7 4 17 5 24 3 2 6-3 11-10 12-7 1-13-3-14-15z" fill="#fff" ${o}/>
+    <path d="M16 49c6 3 14 4 20 3-1 4-5 6-10 6-5 0-9-4-10-9z" fill="#d81e3a"/>
+    <ellipse cx="20" cy="18" rx="7" ry="10" fill="#6cc24a" ${o}/>
+    <ellipse cx="31" cy="16" rx="7" ry="10" fill="#6cc24a" ${o}/>
+    <ellipse cx="20.5" cy="19" rx="4.8" ry="7.4" fill="#fff" ${o}/>
+    <ellipse cx="31.5" cy="17" rx="4.8" ry="7.4" fill="#fff" ${o}/>
+    <ellipse cx="22.2" cy="21" rx="2.6" ry="4.4" fill="#1d2f8f"/><ellipse cx="33.2" cy="19" rx="2.6" ry="4.4" fill="#1d2f8f"/>
+    <circle cx="23" cy="19" r="1.1" fill="#fff"/><circle cx="34" cy="17" r="1.1" fill="#fff"/>
+    <circle cx="52" cy="22" r="1.5" fill="#2d6b1f"/><circle cx="56.5" cy="25.5" r="1.5" fill="#2d6b1f"/></g>`,
 
     toad: `
       <path d="M15 34h34v10c0 9-7 16-17 16s-17-7-17-16z" fill="#f6e2b8" ${o}/>
@@ -46,17 +47,18 @@
       <path d="M29.5 53c1.5 1.4 3.5 1.4 5 0" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>`,
 
     "princess peach": `
-      <path d="M8 56c-5-17 0-35 11-41 8-4 18-4 26 0 11 6 16 24 11 41-4-3-6-8-7-13H15c-1 5-3 10-7 13z" fill="#ffd93b" ${o}/>
-      <ellipse cx="32" cy="38" rx="14.5" ry="15" fill="#fde7d8" ${o}/>
-      <path d="M17.5 34c1-8 7-13 14.5-13 7 0 12.5 4 14.5 11-5-1-10-3-13.5-7-3 4-9 8-15.5 9z" fill="#ffd93b" ${o}/>
-      <path d="M24 14l2-7 3.5 4L32 5l2.5 6 3.5-4 2 7z" fill="#f2b31f" ${o}/><circle cx="32" cy="11.5" r="1.7" fill="#e52521"/>
-      <ellipse cx="26" cy="39.5" rx="3.3" ry="4.4" fill="#fff" ${o}/><ellipse cx="38" cy="39.5" rx="3.3" ry="4.4" fill="#fff" ${o}/>
-      <ellipse cx="26.4" cy="40.3" rx="2.2" ry="3" fill="#2e8bd6"/><ellipse cx="37.6" cy="40.3" rx="2.2" ry="3" fill="#2e8bd6"/>
-      <circle cx="27.2" cy="38.8" r="1" fill="#fff"/><circle cx="38.4" cy="38.8" r="1" fill="#fff"/>
-      <path d="M22.2 36.2c1.2-1.4 4.4-1.6 6.2-.4M35.6 35.8c1.8-1.2 5-1 6.2.4" fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>
-      <ellipse cx="22" cy="45.5" rx="3" ry="1.8" fill="#f7a6c4"/><ellipse cx="42" cy="45.5" rx="3" ry="1.8" fill="#f7a6c4"/>
-      <path d="M29 47.5c2 2 4 2 6 0" fill="#e2557f" stroke="#c23a64" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="17" cy="46.5" r="2.8" fill="#36b3e0" ${o}/><circle cx="47" cy="46.5" r="2.8" fill="#36b3e0" ${o}/>`,
+    <path d="M7 58C3 44 5 26 14 17c9-9 27-9 36 0 9 9 11 27 7 41-3 0-6-2-8-6H15c-2 4-5 6-8 6z" fill="#ffd93b" ${o}/>
+    <ellipse cx="32" cy="40" rx="16" ry="15.5" fill="#fde7d8" ${o}/>
+    <path d="M15.5 38c0-11 7-19 16.5-19s16.5 8 16.5 19c-4-6-11-10-18-10-5 2-10 5-15 10z" fill="#ffd93b" ${o}/>
+    <path d="M25 15l1.5-7 4 4 1.5-6 1.5 6 4-4 1.5 7z" fill="#f2b31f" ${o}/><circle cx="32" cy="12.6" r="1.6" fill="#e52521"/>
+    <ellipse cx="25.5" cy="42" rx="3.8" ry="5.2" fill="#2e6fd6" ${o}/><ellipse cx="38.5" cy="42" rx="3.8" ry="5.2" fill="#2e6fd6" ${o}/>
+    <ellipse cx="25.5" cy="43.2" rx="2" ry="2.8" fill="#163d8f"/><ellipse cx="38.5" cy="43.2" rx="2" ry="2.8" fill="#163d8f"/>
+    <circle cx="26.8" cy="40" r="1.5" fill="#fff"/><circle cx="39.8" cy="40" r="1.5" fill="#fff"/>
+    <circle cx="24.2" cy="45" r=".7" fill="#fff"/><circle cx="37.2" cy="45" r=".7" fill="#fff"/>
+    <path d="M21.6 38.6c1.6-3.6 6.6-3.8 8.2-.4M21.6 38.6l-1.8-1.2M34.2 38.2c1.6-3.4 6.6-3.2 8.2.4M42.4 38.6l1.8-1.2" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="20.5" cy="48.5" rx="3" ry="1.8" fill="#f7a6c4"/><ellipse cx="43.5" cy="48.5" rx="3" ry="1.8" fill="#f7a6c4"/>
+    <path d="M29.5 50c1.5 1.6 3.5 1.6 5 0" fill="none" stroke="#c23a64" stroke-width="1.8" stroke-linecap="round"/>
+    <circle cx="16" cy="49" r="2.8" fill="#36b3e0" ${o}/><circle cx="48" cy="49" r="2.8" fill="#36b3e0" ${o}/>`,
 
     boo: `
       <path d="M10 34c0-15 10-25 23-25s22 10 22 24c0 13-9 22-21 22-6 0-11-2-14-5-4 1-8-1-8-4 2-1 2-3 0-5 0-2-2-4-2-7z" fill="#fbfbfb" ${o}/>
